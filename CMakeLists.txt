@@ -12,11 +12,9 @@ endif()
 
 include(GNUInstallDirs)
 
-set(SOURCE_FILES srcs/client.cpp)
+set(SOURCE_FILES srcs/client.cpp srcs/request.cpp)
 
-add_library(${PROJECT_NAME} SHARED
-                            srcs/client.cpp
-)
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/includes>

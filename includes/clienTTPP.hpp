@@ -1,5 +1,5 @@
 #ifndef CLIENTTTPP_HPP
-# define CLIENTTPP_HPP
+# define CLIENTTTPP_HPP
 
 #include "client.hpp"
 #include "request.hpp"

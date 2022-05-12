@@ -23,7 +23,6 @@ namespace clienTTPP{
     {
     public:
         Client();
-        Client(const std::string &host);
         Client(const Client &src);
         Client &operator=(const Client &src);
         ~Client();

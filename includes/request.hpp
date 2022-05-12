@@ -6,30 +6,33 @@
 
 namespace clienTTPP{
 
-    enum method{
-        GET,
-        POST,
-        UNKNOWN
-    };
-
     class Request
     {
     public:
         Request();
-        Request(const std::string &method);
         Request(const Request &src);
         Request &operator=(const Request &src);
         ~Request();
 
-        void setRequestMethod(const method &requestMethod);
+        void addRequestHeader(const std::pair<std::string, std::string> &headerPair);
 
+        void buildRequest(const std::string &method, const std::string &uri);
+
+        struct requestError : public std::exception{
+            const char *what() const throw(){
+                return ("Request error");
+            }
+        };
+
+        const std::string &getRawRequest() const;
+        
     private:
         typedef std::map<std::string, std::string>  mapHeaders;
-        typedef std::pair<int, std::string>         rawHeaders;
 
-        mapHeaders  _mapRequestHeaders;
-        rawHeaders  _rawRequestHeaders;
-        method      _requestMethod;
+        mapHeaders   _mapRequestHeaders;
+        std::string  _rawRequest;
+
+        void _setRequestLine(const std::string &method, const std::string &uri);
     };
 
 }

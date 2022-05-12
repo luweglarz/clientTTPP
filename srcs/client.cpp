@@ -4,7 +4,7 @@ namespace clienTTPP{
 
     /* Default constructor*/
     Client::Client(): _socketFd(0), _sendDatas(), _recvDatas(){
-        _buildSocket();
+        this->_buildSocket();
     }
 
     /* Copy constructor*/
