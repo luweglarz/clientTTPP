@@ -5,7 +5,6 @@ namespace clienTTPP{
     
     /* Default constructor*/
     Request::Request(): _mapRequestHeaders(), _rawRequest(){
-
     }
 
     /* Copy constructor*/
@@ -25,7 +24,12 @@ namespace clienTTPP{
     }
 
     void Request::addRequestHeader(const std::pair<std::string, std::string> &headerPair){
-            _mapRequestHeaders.insert(headerPair);
+
+        if (*(--headerPair.first.end()) != ' ')
+            static_cast<std::string>(headerPair.first).append(" ");
+        if(this->_mapRequestHeaders.count(headerPair.first) == 1)
+            this->_mapRequestHeaders.erase(headerPair.first);
+        this->_mapRequestHeaders.insert(headerPair);
     }
 
     void Request::buildRequest(const std::string &method, const std::string &uri){
@@ -37,13 +41,15 @@ namespace clienTTPP{
         it = this->_mapRequestHeaders.begin();
         while (it != this->_mapRequestHeaders.end()){
             this->_rawRequest.append(it->first);
-            if (*(--it->first.end()) != ' ')
-                this->_rawRequest.append(" ");
             this->_rawRequest.append(it->second);
             this->_rawRequest.append("\r\n");
             it++;
         }
         this->_rawRequest.append("\r\n");
+    }
+
+    const std::map<std::string, std::string> &Request::getMapRequestHeader() const{
+        return (this->_mapRequestHeaders);
     }
 
     const std::string &Request::getRawRequest() const{

@@ -9,6 +9,9 @@ namespace clienTTPP{
     class Request
     {
     public:
+
+        typedef std::map<std::string, std::string>  mapHeaders;
+
         Request();
         Request(const Request &src);
         Request &operator=(const Request &src);
@@ -24,10 +27,10 @@ namespace clienTTPP{
             }
         };
 
-        const std::string &getRawRequest() const;
-        
+        const std::string   &getRawRequest() const;
+        const mapHeaders    &getMapRequestHeader() const;
+
     private:
-        typedef std::map<std::string, std::string>  mapHeaders;
 
         mapHeaders   _mapRequestHeaders;
         std::string  _rawRequest;

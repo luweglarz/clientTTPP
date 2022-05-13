@@ -3,7 +3,7 @@
 namespace clienTTPP{
 
     /* Default constructor*/
-    Client::Client(): _socketFd(0), _sendDatas(), _recvDatas(){
+    Client::Client(): _socketFd(0), _hostTarget(), _sendDatas(), _recvDatas(){
         this->_buildSocket();
     }
 
@@ -15,6 +15,7 @@ namespace clienTTPP{
     /* Assign operator*/
     Client &Client::operator=(const Client &src){
         this->_socketFd = src._socketFd;
+        this->_hostTarget = src._hostTarget;
         this->_sendDatas = src._sendDatas;
         this->_recvDatas = src._recvDatas;
         return (*this);
@@ -46,7 +47,11 @@ namespace clienTTPP{
         size_t      bytesSent = 0;
         size_t      requestSize = 0;
 
+        //Set default header
         request.addRequestHeader(std::make_pair("Host: ", this->_hostTarget));
+        request.addRequestHeader(std::make_pair("User-Agent: ", "clienTTPP"));
+        //if (request.getMapRequestHeader().count("Accept: ") == 0)
+            request.addRequestHeader(std::make_pair("Accept: ", "*/*"));
         request.buildRequest(method, uri);
         requestSize = request.getRawRequest().size();
         std::string rawRequestCpy(request.getRawRequest());
