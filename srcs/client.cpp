@@ -22,6 +22,7 @@ namespace clienTTPP{
 
     /* Destructor*/
     Client::~Client(){
+        close(this->_socketFd);
     }
 
     void Client::connectToServer(const std::string &hostTarget){
@@ -36,8 +37,38 @@ namespace clienTTPP{
         hostSockAddr.sin_addr.s_addr = hostInAddr;
         hostSockAddr.sin_family = AF_INET;
         hostSockAddr.sin_port = htons(SERVER_PORT);
+        this->_hostTarget = hostTarget;
         if (connect(this->_socketFd, (struct sockaddr*)&hostSockAddr, sizeof(hostSockAddr)) == -1)
             throw socketError();
+    }
+
+    void        Client::sendRequest(Request &request, const std::string &method, const std::string &uri){
+        size_t      bytesSent = 0;
+        size_t      requestSize = 0;
+
+        request.addRequestHeader(std::make_pair("Host: ", this->_hostTarget));
+        request.buildRequest(method, uri);
+        requestSize = request.getRawRequest().size();
+        std::string rawRequestCpy(request.getRawRequest());
+        while (bytesSent <= requestSize) {
+            bytesSent += send(this->_socketFd, rawRequestCpy.c_str(), request.getRawRequest().size(), 0);
+            if (bytesSent == -1)
+                throw sendError();
+            rawRequestCpy.erase(0, bytesSent);
+        }        
+    }
+
+    std::string Client::recvRequest(){
+        char        recvBuffer[RECV_BUFFER_SIZE];
+        std::string serverResponse("");
+        size_t      bytesRecved = 0;
+
+        bzero(recvBuffer, RECV_BUFFER_SIZE);
+        while ((bytesRecved = recv(this->_socketFd, recvBuffer, RECV_BUFFER_SIZE, 0)) > 0){
+            serverResponse.append(recvBuffer);
+            bzero(recvBuffer, RECV_BUFFER_SIZE);
+        }
+        return (serverResponse);
     }
 
     /* Private functions */

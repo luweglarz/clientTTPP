@@ -37,13 +37,13 @@ namespace clienTTPP{
         it = this->_mapRequestHeaders.begin();
         while (it != this->_mapRequestHeaders.end()){
             this->_rawRequest.append(it->first);
-            if (*(it->first.end()) != ' ')
+            if (*(--it->first.end()) != ' ')
                 this->_rawRequest.append(" ");
             this->_rawRequest.append(it->second);
             this->_rawRequest.append("\r\n");
             it++;
         }
-        std::cout << "display header: " << _rawRequest << std::endl;
+        this->_rawRequest.append("\r\n");
     }
 
     const std::string &Request::getRawRequest() const{
@@ -57,7 +57,7 @@ namespace clienTTPP{
         if (method != "POST" && method != "GET"){
             throw requestError();
         }
-        this->_rawRequest.append(method).append(" ").append(uri);
+        this->_rawRequest.append(method).append(" ").append(uri).append(" ");
         this->_rawRequest.append("HTTP/1.1\r\n");
     }
 }
