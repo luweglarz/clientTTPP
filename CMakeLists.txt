@@ -14,7 +14,10 @@ include(GNUInstallDirs)
 
 set(SOURCE_FILES srcs/client.cpp srcs/request.cpp)
 
+
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+
+target_link_libraries(${PROJECT_NAME} -lssl)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/includes>

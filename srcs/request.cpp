@@ -56,7 +56,6 @@ namespace clienTTPP{
         return (this->_rawRequest);
     }
 
-
     /* Private functions*/
 
     void Request::_setRequestLine(const std::string &method, const std::string &uri){

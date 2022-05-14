@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <openssl/ssl.h>
 
 namespace clienTTPP{
 
@@ -29,11 +30,11 @@ namespace clienTTPP{
 
         const std::string   &getRawRequest() const;
         const mapHeaders    &getMapRequestHeader() const;
-
+        
     private:
 
-        mapHeaders   _mapRequestHeaders;
-        std::string  _rawRequest;
+        mapHeaders  _mapRequestHeaders;
+        std::string _rawRequest;
 
         void _setRequestLine(const std::string &method, const std::string &uri);
     };

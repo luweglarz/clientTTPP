@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
+#include <openssl/ssl.h>
 #include <unistd.h>
 #include <exception>
 #include "request.hpp"
 
-#define SERVER_PORT 80
+#define SERVER_HTTP_PORT 80
+#define SERVER_HTTPS_PORT 443
 #define RECV_BUFFER_SIZE 100000
 
 namespace clienTTPP{
@@ -29,29 +30,37 @@ namespace clienTTPP{
         Client &operator=(const Client &src);
         ~Client();
 
-        void        connectToServer(const std::string &hostTarget);
-        void        sendRequest(Request &request, const std::string &method, const std::string &uri);
-        std::string recvRequest();
+        void        connectToServer(const std::string scheme, const std::string &hostTarget);
+        std::string sendRequest(Request &request, const std::string &method, const std::string &uri);
 
-        struct socketError : public std::exception{
-            const char *what() const throw(){
-                return ("Socket error");
-            }
-        };
+    class clientError: public std::exception {
 
-        struct sendError : public std::exception{
-            const char *what() const throw(){
-                return ("Send error");
-            }
-        };
+    public:
+        clientError(int errorCode):
+        _errorMessage(strerror(errorCode))
+        {}
+
+        virtual ~clientError() throw () {}
+        const char* what() const throw () {
+            return (_errorMessage.c_str());
+        }
+    private:
+        std::string _errorMessage;
+
+};
 
     private:
         int                         _socketFd;
         std::string                 _hostTarget;
         std::pair<int, std::string> _sendDatas;
         std::pair<int, std::string> _recvDatas;
+        SSL_CTX                     *_sslCtx;
+        SSL                         *_sslStruct;
 
-        void    _buildSocket();
+        void        _buildSocket();
+        std::string _recvRequest(Request &request);
+        int         _setHostPort(const std::string &scheme);
+        void        _initConnectSsl();
     };
 
 }
