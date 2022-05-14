@@ -64,6 +64,7 @@ namespace clienTTPP{
     std::string        Client::sendRequest(Request &request, const std::string &method, const std::string &uri){
         size_t      bytesSent = 0;
         size_t      requestSize = 0;
+        std::string rawRequestCpy;
 
         request.addRequestHeader(std::make_pair("Host: ", this->_hostTarget));
         request.addRequestHeader(std::make_pair("User-Agent: ", "clienTTPP"));
@@ -71,17 +72,20 @@ namespace clienTTPP{
             request.addRequestHeader(std::make_pair("Accept: ", "*/*"));
         request.buildRequest(method, uri);
         requestSize = request.getRawRequest().size();
-        std::string rawRequestCpy(request.getRawRequest());
-        while (bytesSent <= requestSize){
+        rawRequestCpy = request.getRawRequest();
+    std::cout << "send boucle1: " << rawRequestCpy << std::endl;
+        while (rawRequestCpy.size() != 0){
+            std::cout << "send boucle: " << rawRequestCpy << std::endl;
             if (this->_sslStruct)
-                bytesSent += SSL_write(_sslStruct, rawRequestCpy.c_str(), request.getRawRequest().size());
+                bytesSent += SSL_write(this->_sslStruct, rawRequestCpy.c_str(), request.getRawRequest().size());
             else
                 bytesSent += send(this->_socketFd, rawRequestCpy.c_str(), request.getRawRequest().size(), 0);
             if (bytesSent == -1)
                 throw clientError(errno);
             rawRequestCpy.erase(0, bytesSent);
         }
-        return (this->_recvRequest(request)); 
+        std::cout << "hors boucle\n";
+        return (this->_recvRequest()); 
     }
 
     /* Private functions */
@@ -104,22 +108,27 @@ namespace clienTTPP{
         return (-1);
     }
 
-    std::string Client::_recvRequest(Request &request){
+
+    /* function to fix */
+    std::string Client::_recvRequest(){
         char        recvBuffer[RECV_BUFFER_SIZE];
         std::string serverResponse("");
-        size_t      bytesRecved = 1;
-
+        size_t      bytesRecved = 0;
+            
         bzero(recvBuffer, RECV_BUFFER_SIZE);
         while (bytesRecved > 0){
+            std::cout << "recv boucle\n";
             if (this->_sslStruct)
-                bytesRecved = SSL_read(_sslStruct, recvBuffer, RECV_BUFFER_SIZE);
+                bytesRecved = SSL_read(this->_sslStruct, recvBuffer, RECV_BUFFER_SIZE);
             else
                 bytesRecved = recv(this->_socketFd, recvBuffer, RECV_BUFFER_SIZE, 0);
             serverResponse.append(recvBuffer);
+            std::cout << "servrep " << serverResponse << std::endl;
             if (bytesRecved == -1)
                 throw clientError(errno);
             bzero(recvBuffer, RECV_BUFFER_SIZE);
         }
+        std::cout << "hosobucle\n";
         return (serverResponse);
     }
 

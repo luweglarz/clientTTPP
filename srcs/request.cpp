@@ -59,7 +59,7 @@ namespace clienTTPP{
     /* Private functions*/
 
     void Request::_setRequestLine(const std::string &method, const std::string &uri){
-        if (method != "POST" && method != "GET"){
+        if (method != "POST" && method != "GET" && method != "HEAD"){
             throw requestError();
         }
         this->_rawRequest.append(method).append(" ").append(uri).append(" ");
