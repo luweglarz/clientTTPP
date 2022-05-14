@@ -59,6 +59,8 @@ namespace clienTTPP{
 
         void        _buildSocket();
         std::string _recvRequest();
+        std::string _SSL_readLoop();
+        std::string _recvLoop();
         int         _setHostPort(const std::string &scheme);
         void        _initConnectSsl();
     };
