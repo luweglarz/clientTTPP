@@ -72,9 +72,12 @@ namespace clienTTPP{
         request.buildRequest(method, uri);
         requestSize = request.getRawRequest().size();
         rawRequestCpy = request.getRawRequest();
+        std::cout << "rawrequest: " << rawRequestCpy << std::endl;
         while (rawRequestCpy.size() != 0){
-            if (this->_sslStruct)
+            if (this->_sslStruct){
                 bytesSent = SSL_write(this->_sslStruct, rawRequestCpy.c_str(), rawRequestCpy.size());
+                std::cout << "byte sent " << bytesSent << std::endl;
+            }
             else
                 bytesSent = send(this->_socketFd, rawRequestCpy.c_str(), rawRequestCpy.size(), 0);
             if (bytesSent == -1)
@@ -106,7 +109,7 @@ namespace clienTTPP{
 
     std::string Client::_recvRequest(){
         if (this->_sslStruct)
-            this->_SSL_readLoop();
+            return (this->_SSL_readLoop());
         return (this->_recvLoop());
     }
 
