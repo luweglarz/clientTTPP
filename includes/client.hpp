@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <arpa/inet.h>
+#include <thread>
 #include <assert.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -50,6 +51,9 @@ namespace clienTTPP{
 };
 
     private:
+
+        typedef void * (*functionPtr)(void *);
+
         int                         _socketFd;
         std::string                 _hostTarget;
         std::pair<int, std::string> _sendDatas;
@@ -57,10 +61,13 @@ namespace clienTTPP{
         SSL_CTX                     *_sslCtx;
         SSL                         *_sslStruct;
 
+        
         void        _buildSocket();
-        std::string _recvRequest();
-        std::string _SSL_readLoop();
-        std::string _recvLoop();
+        void        _SSL_writeLoop(std::string rawRequest);
+        void        _sendLoop(std::string rawRequest);
+        std::string _recvRequest(std::thread &sendThread);
+        std::string _SSL_readLoop(std::thread &sendThread);
+        std::string _recvLoop(std::thread &sendThread);
         int         _setHostPort(const std::string &scheme);
         void        _initConnectSsl();
     };

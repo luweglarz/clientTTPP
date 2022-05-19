@@ -10,20 +10,26 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+set (CMAKE_CXX_STANDARD 11)
+
 include(GNUInstallDirs)
 
 set(SOURCE_FILES srcs/client.cpp srcs/request.cpp)
 
 
+include_directories("/usr/local/include")
+
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} -lssl)
+target_link_libraries(${PROJECT_NAME} -L/usr/local/lib/ -lssl)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/includes>
     $<INSTALL_INTERFACE:includes>
-    PRIVATE src)
+    PRIVATE srcs)
 
+
+    
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1)

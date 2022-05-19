@@ -65,6 +65,7 @@ namespace clienTTPP{
         size_t      bytesSent = 0;
         size_t      requestSize = 0;
         std::string rawRequestCpy;
+        std::thread thread;
 
         request.addRequestHeader(std::make_pair("Host: ", this->_hostTarget));
         request.addRequestHeader(std::make_pair("User-Agent: ", "clienTTPP"));
@@ -72,19 +73,11 @@ namespace clienTTPP{
         request.buildRequest(method, uri);
         requestSize = request.getRawRequest().size();
         rawRequestCpy = request.getRawRequest();
-        std::cout << "rawrequest: " << rawRequestCpy << std::endl;
-        while (rawRequestCpy.size() != 0){
-            if (this->_sslStruct){
-                bytesSent = SSL_write(this->_sslStruct, rawRequestCpy.c_str(), rawRequestCpy.size());
-                std::cout << "byte sent " << bytesSent << std::endl;
-            }
-            else
-                bytesSent = send(this->_socketFd, rawRequestCpy.c_str(), rawRequestCpy.size(), 0);
-            if (bytesSent == -1)
-                throw clientError(errno);
-            rawRequestCpy.erase(0, bytesSent);
-        }
-        return (this->_recvRequest());
+        if (this->_sslStruct)
+            thread = std::thread(&Client::_SSL_writeLoop, this, rawRequestCpy);
+        else
+            thread = std::thread(&Client::_sendLoop, this, rawRequestCpy);
+        return (this->_recvRequest(thread));
     }
 
     /* Private functions */
@@ -107,13 +100,35 @@ namespace clienTTPP{
         return (-1);
     }
 
-    std::string Client::_recvRequest(){
-        if (this->_sslStruct)
-            return (this->_SSL_readLoop());
-        return (this->_recvLoop());
+    void    Client::_sendLoop(std::string rawRequest){
+        size_t      bytesSent = 0;
+
+        while (rawRequest.size() != 0){
+            bytesSent = send(this->_socketFd, rawRequest.c_str(), rawRequest.size(), 0);
+            if (bytesSent == -1)
+                throw clientError(errno);
+            rawRequest.erase(0, bytesSent);
+        }
     }
 
-    std::string    Client::_recvLoop(){
+    void    Client::_SSL_writeLoop(std::string rawRequest){
+        size_t      bytesSent = 0;
+
+        while (rawRequest.size() != 0){
+            bytesSent = SSL_write(this->_sslStruct, rawRequest.c_str(), rawRequest.size());
+            if (bytesSent == -1)
+                throw clientError(errno);
+            rawRequest.erase(0, bytesSent);
+        }
+    }
+
+    std::string Client::_recvRequest(std::thread &sendThread){
+        if (this->_sslStruct)
+            return (this->_SSL_readLoop(sendThread));
+        return (this->_recvLoop(sendThread));
+    }
+
+    std::string    Client::_recvLoop(std::thread &sendThread){
         std::string serverResponse("");
         char        recvBuffer[RECV_BUFFER_SIZE];
         size_t      bytesRecved = 0;
@@ -125,10 +140,11 @@ namespace clienTTPP{
                 throw clientError(errno);
             bzero(recvBuffer, RECV_BUFFER_SIZE);
         }
+        sendThread.join();
         return (serverResponse);
     }
 
-    std::string    Client::_SSL_readLoop(){
+    std::string    Client::_SSL_readLoop(std::thread &sendThread){
         std::string serverResponse("");
         char        recvBuffer[RECV_BUFFER_SIZE];
         size_t      bytesRecved = 0;
@@ -140,6 +156,7 @@ namespace clienTTPP{
                 throw clientError(errno);
             bzero(recvBuffer, RECV_BUFFER_SIZE);
         }
+        sendThread.join();
         return (serverResponse);
     }
 
